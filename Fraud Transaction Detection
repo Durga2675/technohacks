@@ -1,0 +1,29 @@
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.impute import SimpleImputer
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import classification_report, confusion_matrix
+
+df = pd.read_csv('/content/creditcard[1].csv')
+if df['Class'].isnull().any():
+    df = df.dropna(subset=['Class'])
+    print("Dropped rows with missing target variable values.")
+X = df.drop('Class', axis=1)
+y = df['Class']
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+imputer = SimpleImputer(strategy='mean')
+X_train_imputed = imputer.fit_transform(X_train)
+X_test_imputed = imputer.transform(X_test)
+
+scaler = StandardScaler()
+X_train_imputed = scaler.fit_transform(X_train_imputed)
+X_test_imputed = scaler.transform(X_test_imputed)
+
+model = RandomForestClassifier(n_estimators=100, random_state=42)
+
+model.fit(X_train_imputed, y_train)
+y_pred = model.predict(X_test_imputed)
+print("Confusion Matrix:\n", confusion_matrix(y_test, y_pred))
+print("\nClassification Report:\n", classification_report(y_test, y_pred))
